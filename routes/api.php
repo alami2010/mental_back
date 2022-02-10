@@ -83,6 +83,7 @@ function populateChantier(\Illuminate\Support\Collection $chantiers): void
     foreach ($chantiers as $chantier) {
         $chantier['listMateriaux'] = array_map("getMateriaux", explode("_", $chantier->materiaux));
         $chantier['listPlans'] = \App\Models\Plan::getByIdChantier($chantier->id);
+        $chantier['horaires'] = \App\Models\Horaire::getByIdChantier($chantier->id);
 
         $travaux = \App\Models\ChantierTravaux::where('id_chantier', '=', $chantier->id)->get();
         foreach ($travaux as $travail) {
@@ -161,22 +162,95 @@ Route::post('/change-chantier-status/', function (Request $request) {
 Route::post('/change-chantier-process/', function (Request $request) {
 
     $id = $request->get('id');
-     $travaux = json_decode($request->get('travaux'));
+    $travaux = json_decode($request->get('travaux'));
 
-     foreach ($travaux as $travail) {
+    foreach ($travaux as $travail) {
 
         $travailModel = \App\Models\ChantierTravaux::find($travail->id);
-         $travailModel->update(['progress' => $travail->progress]);
+        $travailModel->update(['progress' => $travail->progress]);
     }
 
     return $travaux;
 });
-
+// travaux-supp
 Route::post('/change-chantier-supp/', function (Request $request) {
     $idChantier = $request->get('id');
     $supp = $request->get('supp');
     $chantier = \App\Models\Chantier::find($idChantier);
     $chantier->update(['supp' => $supp]);
     return '';
+});
+
+
+// materiaux-manquant
+Route::get('/materiaux-manquant/', function () {
+    return \App\Models\MateriauxManquant::getAll();
+});
+
+Route::get('/materiaux-manquant-qte/', function () {
+    return \App\Models\MateriauxManquant::getOnlyMateriauxManquant();
+});
+
+Route::post('/materiaux-manquant/', function (Request $request) {
+    $materiauxMaquant = new \App\Models\MateriauxManquant(['name' => $request->get('name'), 'qte' => 0]);
+    $materiauxMaquant->save();
+    return $materiauxMaquant;
+});
+
+Route::post('/materiaux-manquant-qte/', function (Request $request) {
+    $id = $request->get('id');
+    $qte = $request->get('qte');
+    $materiauxMaquant = \App\Models\MateriauxManquant::find($id);
+    $materiauxMaquant->update(['qte' => $qte]);
+    return '';
+});
+
+// horaire
+Route::post('/horaire/', function (Request $request) {
+    $hor = new \App\Models\Horaire(
+        ['debutMatin' => $request->get('debutMatin'),
+            'debutSoir' => $request->get('debutSoir'),
+            'finMatin' => $request->get('finMatin'),
+            'finSoir' => $request->get('finSoir'),
+            'date' => $request->get('date'),
+            'weekday' => (int)$request->get('weekday'),
+            'id_chantier' => $request->get('id')]);
+    $hor->save();
+    return $hor;
+});
+
+
+// nv photo
+
+Route::post('/photo-chantier-upload/', function (Request $request) {
+    $keys = $request->files->keys();
+    error_log('Some message here.');
+    $photos = array();
+
+    foreach ($keys as $key) {
+        $uploadedFile = $request->file($key);
+        if ($uploadedFile->isValid()) {
+            $name = time() . "_" . $uploadedFile->getClientOriginalName();
+            $photo = new \App\Models\Photo([
+                    'id_chantier' => $request->get('id'),
+                    'name' => $uploadedFile->getClientOriginalName(),
+                    'url' => $name]
+            );
+            $photo->save();
+            $uploadedFile->move("files", $name);
+
+            $photos[] = $photo;
+        }
+    }
+
+    return $photos;
+});
+
+
+Route::get('/photo-chantier/', function (Request $request) {
+    error_log('Some message here.');
+
+    $id = $request->get('id');
+    return \App\Models\Photo::getByIdChantier($id);
 });
 
