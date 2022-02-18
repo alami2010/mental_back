@@ -14,10 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-function getTravaux($num)
-{
-    return \App\Models\Travail::getTravail($num)->name;
-}
+
 
 function getMateriaux($num)
 {
@@ -38,6 +35,9 @@ Route::delete('/material/{id}', function ($id) {
     return \App\Models\Material::deleteMaterial($id);
 });
 Route::get('/material/', function () {
+
+    event(new \App\Models\MyEvent('hello world'));
+
     return \App\Models\Material::getAll();
 });
 Route::post('/material/', function (Request $request) {
@@ -81,14 +81,12 @@ Route::post('/travail/', function (Request $request) {
 function populateChantier(\Illuminate\Support\Collection $chantiers): void
 {
     foreach ($chantiers as $chantier) {
-        $chantier['listMateriaux'] = array_map("getMateriaux", explode("_", $chantier->materiaux));
+        $chantier['listMateriaux'] =  explode("___", $chantier->materiaux); 
         $chantier['listPlans'] = \App\Models\Plan::getByIdChantier($chantier->id);
         $chantier['horaires'] = \App\Models\Horaire::getByIdChantier($chantier->id);
 
         $travaux = \App\Models\ChantierTravaux::where('id_chantier', '=', $chantier->id)->get();
-        foreach ($travaux as $travail) {
-            $travail['name'] = \App\Models\Travail::getTravail($travail->id_travaux)->name;
-        }
+        
         $chantier['listTravaux'] = $travaux;
     }
 }
@@ -123,11 +121,11 @@ Route::post('/nv-chantier/', function (Request $request) {
 
     $travauxString = $request->get('travaux');
 
-    $travauxArray = explode("_", $travauxString);
+    $travauxArray = explode("___", $travauxString);
     foreach ($travauxArray as $element) {
         $chantierTravaux = new \App\Models\ChantierTravaux([
             'id_chantier' => $chantier->id,
-            'id_travaux' => $element,
+            'name' => $element,
             'progress' => 0]);
         $chantierTravaux->save();
     }

@@ -11,7 +11,7 @@ class ChantierTravaux extends Model
     protected $table = "chantier_travaux";
     protected $fillable = [
         'id_chantier',
-        'id_travaux',
+        'name',
         'progress'
     ];
 

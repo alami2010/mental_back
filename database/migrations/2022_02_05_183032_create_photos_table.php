@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateChantierTravauxesTable extends Migration
+class CreatePhotosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateChantierTravauxesTable extends Migration
      */
     public function up()
     {
-        Schema::create('chantier_travaux', function (Blueprint $table) {
+        Schema::create('photos', function (Blueprint $table) {
             $table->id();
             $table->integer('id_chantier');
             $table->string('name');
-            $table->integer('progress');
+            $table->string('url');
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ class CreateChantierTravauxesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chantier_travaux');
+        Schema::dropIfExists('photos');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateChantierMateriauxesTable extends Migration
+class CreateHorairesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,14 @@ class CreateChantierMateriauxesTable extends Migration
      */
     public function up()
     {
-        Schema::create('chantier_materiaux', function (Blueprint $table) {
+        Schema::create('horaires', function (Blueprint $table) {
             $table->id();
+            $table->string('debutMatin');
+            $table->string('debutSoir');
+            $table->string('finMatin');
+            $table->string('finSoir');
+            $table->string('date');
             $table->integer('id_chantier');
-            $table->integer('id_materiaux');
             $table->timestamps();
         });
     }
@@ -28,6 +32,6 @@ class CreateChantierMateriauxesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chantier_materiaux');
+        Schema::dropIfExists('horaires');
     }
 }
