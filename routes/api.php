@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-
 function getMateriaux($num)
 {
     return \App\Models\Material::getMateriaux($num)->name;
@@ -81,12 +80,12 @@ Route::post('/travail/', function (Request $request) {
 function populateChantier(\Illuminate\Support\Collection $chantiers): void
 {
     foreach ($chantiers as $chantier) {
-        $chantier['listMateriaux'] =  explode("___", $chantier->materiaux); 
+        $chantier['listMateriaux'] = explode("___", $chantier->materiaux);
         $chantier['listPlans'] = \App\Models\Plan::getByIdChantier($chantier->id);
         $chantier['horaires'] = \App\Models\Horaire::getByIdChantier($chantier->id);
 
         $travaux = \App\Models\ChantierTravaux::where('id_chantier', '=', $chantier->id)->get();
-        
+
         $chantier['listTravaux'] = $travaux;
     }
 }
@@ -250,5 +249,34 @@ Route::get('/photo-chantier/', function (Request $request) {
 
     $id = $request->get('id');
     return \App\Models\Photo::getByIdChantier($id);
+});
+
+
+// nv tva
+
+Route::post('/tva-upload/', function (Request $request) {
+    $keys = $request->files->keys();
+    $photos = array();
+    foreach ($keys as $key) {
+        $uploadedFile = $request->file($key);
+        if ($uploadedFile->isValid()) {
+            $name = time() . "_" . $uploadedFile->getClientOriginalName();
+            $tva = new \App\Models\Tva([
+                    'name' => $uploadedFile->getClientOriginalName(),
+                    'url' => $name]
+            );
+            $tva->save();
+            $uploadedFile->move("files", $name);
+            $photos[] = $tva;
+        }
+    }
+
+    return $photos;
+});
+
+
+Route::get('/tva/', function (Request $request) {
+    $id = $request->get('id');
+    return \App\Models\Tva::getAll();
 });
 
